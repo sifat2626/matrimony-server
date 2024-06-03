@@ -8,6 +8,8 @@ require("dotenv").config();
 const morgan = require("morgan");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const Counter = require('./models/CounterModel');
+
 
 // middlewares
 app.use(cors({
@@ -28,6 +30,12 @@ readdirSync("./routes").map((r) =>
     app.use("/api/v1", require(`./routes/${r}`))
 );
 
+const initializeCounter = async () => {
+    const counter = await Counter.findOne({ name: 'biodataId' });
+    if (!counter) {
+        await Counter.create({ name: 'biodataId', seq: 1 });
+    }
+};
 // server
 const port = process.env.PORT || 8000;
 
@@ -39,6 +47,7 @@ mongoose
     .then(() => {
         app.listen(port, () => {
             console.log(`Server Running on port ${port}`);
+            initializeCounter().catch(console.error);
         });
     })
     .catch((err) => console.log(err));

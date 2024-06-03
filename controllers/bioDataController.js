@@ -1,7 +1,15 @@
 const Biodata = require('../models/BiodataModel');
 const User = require('../models/userModel');
+const Counter = require('../models/counterModel');
 
-let biodataCounter = 1;
+const getNextSequence = async (name) => {
+    const counter = await Counter.findOneAndUpdate(
+        { name },
+        { $inc: { seq: 1 } },
+        { new: true, upsert: true }
+    );
+    return counter.seq;
+};
 
 exports.createOrUpdateBiodata = async (req, res) => {
     try {
@@ -17,10 +25,11 @@ exports.createOrUpdateBiodata = async (req, res) => {
         if (biodata) {
             // Update existing biodata
             Object.assign(biodata, req.body);
+            biodata.contactEmail = userEmail;
         } else {
             // Create new biodata
-            biodata = new Biodata(req.body);
-            biodata.biodataId = biodataCounter++; // Assign and increment counter
+            const nextBiodataId = await getNextSequence('biodataId');
+            biodata = new Biodata({ ...req.body, biodataId: nextBiodataId, contactEmail: userEmail });
             user.biodata = biodata._id;
         }
 
