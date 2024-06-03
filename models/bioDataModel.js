@@ -38,6 +38,5 @@ const biodataSchema = new mongoose.Schema({
     biodataId: { type: Number, unique: true }, // Ensure biodataId is unique
 }, { timestamps: true });
 
-const Biodata = mongoose.model('Biodata', biodataSchema);
 
-module.exports = Biodata;
+module.exports = mongoose.models.Biodata || mongoose.model('Biodata', biodataSchema);

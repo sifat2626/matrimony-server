@@ -1,3 +1,5 @@
+const User = require('../models/userModel');
+
 const jwt = require("jsonwebtoken");
 exports.verifyToken = (req, res, next) => {
     const token = req.cookies?.token
@@ -14,3 +16,19 @@ exports.verifyToken = (req, res, next) => {
 
     console.log(token)
 }
+
+exports.isAdmin = async (req, res, next) => {
+    const email = req.user.email;
+
+    try {
+        const user = await User.find({email});
+        if (user && user.role === 'admin') {
+            next();
+        } else {
+            res.status(403).json({ message: 'Access denied. Admins only.' });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'An error occurred while checking admin privileges' });
+    }
+};

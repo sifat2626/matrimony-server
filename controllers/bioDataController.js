@@ -45,12 +45,12 @@ exports.createOrUpdateBiodata = async (req, res) => {
 
 
 exports.getBiodatas = async (req, res) => {
-    const { page = 1, limit = 10, ageRange, biodataType, division } = req.query;
+    console.log(req.query)
+    const { page = 1, limit = 10, minAge,maxAge, biodataType, division } = req.query;
 
     const query = {};
 
-    if (ageRange) {
-        const [minAge, maxAge] = ageRange.split('-').map(Number);
+    if (minAge && maxAge) {
         query.age = { $gte: minAge, $lte: maxAge };
     }
 

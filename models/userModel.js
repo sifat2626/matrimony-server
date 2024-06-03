@@ -10,6 +10,22 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    premiumStatus:{
+        type:String,
+        default:'Regular'
+    },
+    role:{
+        type:String,
+        default:'user'
+    },
+    approvedContactIds:{
+        type: [Number], // Specify that these are ObjectIds
+        default: [],
+    },
+    requestedContactIds:{
+        type: [Number], // Specify that these are ObjectIds
+        default: [],
+    },
     biodata: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Biodata',
