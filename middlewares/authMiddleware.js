@@ -21,7 +21,7 @@ exports.isAdmin = async (req, res, next) => {
     const email = req.user.email;
 
     try {
-        const user = await User.find({email});
+        const user = await User.findOne({email});
         if (user && user.role === 'admin') {
             next();
         } else {

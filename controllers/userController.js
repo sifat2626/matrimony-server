@@ -42,16 +42,15 @@ exports.requestContact = async (req, res) => {
 };
 
 exports.acceptContact = async (req, res) => {
-    const { id } = req.params;
-    const { contactId } = req.body;
+    const { biodataId } = req.params;
 
     try {
         // Find and update the user
-        await User.findByIdAndUpdate(
-            id,
+        await User.findOneAndUpdate(
+            {email:req.user.email},
             {
-                $pull: { requestedContactIds: contactId }, // Remove from the requested contacts
-                $addToSet: { approvedContactIds: contactId } // Add to the approved contacts
+                $pull: { requestedContactIds: biodataId }, // Remove from the requested contacts
+                $addToSet: { approvedContactIds: biodataId } // Add to the approved contacts
             },
             { new: true, useFindAndModify: false }
         );
