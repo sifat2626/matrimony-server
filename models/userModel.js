@@ -10,22 +10,22 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    premiumStatus:{
-        type:String,
-        default:'Regular'
+    premiumStatus: {
+        type: String,
+        default: 'Regular'
     },
-    role:{
-        type:String,
-        default:'user'
+    role: {
+        type: String,
+        default: 'user'
     },
-    approvedContactIds:{
+    approvedContactIds: {
         type: [Number], // Specify that these are ObjectIds
         default: [],
     },
-    requestedContactIds:{
-        type: [Number], // Specify that these are ObjectIds
-        default: [],
-    },
+    requestedContactIds: [{
+        biodataId: Number,
+        requestTime: { type: Date, default: Date.now }
+    }],
     biodata: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Biodata',

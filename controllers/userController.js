@@ -4,21 +4,34 @@ const mongoose = require("mongoose");
 
 exports.createUser = async (req, res) => {
     try {
-        const { email, name } = req.body;
-        console.log(email,name)
+        const { email, name, biodataId } = req.body; // Ensure biodataId is included if needed
+        console.log(`Email: ${email}, Name: ${name}, BiodataId: ${biodataId}`);
+
         if (!email || !name) {
             return res.status(400).json({ message: 'Email and name are required.' });
         }
+
+        // Check if the user already exists
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(200).json(existingUser);
         }
-        console.log('before')
+
+        // Create a new user
+        console.log('Creating new user...');
         const newUser = new User({ email, name });
+
+        // If biodataId is provided, associate it with the user
+        if (biodataId) {
+            newUser.biodata = biodataId;
+        }
+
         const savedUser = await newUser.save();
-        console.log('after')
+        console.log('User created successfully:', savedUser);
+
         res.status(201).json(savedUser);
     } catch (error) {
+        console.error('Error creating user:', error);
         res.status(400).json({ message: error.message });
     }
 };
@@ -29,8 +42,8 @@ exports.requestContact = async (req, res) => {
     try {
         // Find and update the user
         await User.findOneAndUpdate(
-            {email:req.user.email},
-            { $addToSet: { requestedContactIds: biodataId } }, // Add to the array if it doesn't already exist
+            { email: req.user.email },
+            { $addToSet: { requestedContactIds: { biodataId: biodataId, requestTime: new Date() } } }, // Add object to the array if it doesn't already exist
             { new: true, useFindAndModify: false }
         );
 
@@ -41,16 +54,19 @@ exports.requestContact = async (req, res) => {
     }
 };
 
+
 exports.acceptContact = async (req, res) => {
-    const { biodataId } = req.params;
+    const { email, biodataId } = req.params;
 
     try {
         // Find and update the user
         await User.findOneAndUpdate(
-            {email:req.user.email},
+            { email },
             {
-                $pull: { requestedContactIds: biodataId }, // Remove from the requested contacts
-                $addToSet: { approvedContactIds: biodataId } // Add to the approved contacts
+                // Remove the requested contact object from the array
+                $pull: { requestedContactIds: { biodataId: Number(biodataId) } },
+                // Add the biodataId to the approved contacts array
+                $addToSet: { approvedContactIds: Number(biodataId) }
             },
             { new: true, useFindAndModify: false }
         );
@@ -63,9 +79,12 @@ exports.acceptContact = async (req, res) => {
 };
 
 exports.requestedContacts = async (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 10;
+
     try {
         // Fetch all users who have made contact requests
-        const users = await User.find({ requestedContactIds: { $exists: true, $not: { $size: 0 } } }).lean();
+        const users = await User.find({ "requestedContactIds.0": { $exists: true } }).lean(); // Check for non-empty arrays
 
         console.log("Fetched users:", users);
 
@@ -79,19 +98,20 @@ exports.requestedContacts = async (req, res) => {
         // Iterate through each user and their requested contact IDs
         await Promise.all(users.map(async (user) => {
             console.log(`Processing user: ${user.name} with requestedContactIds: ${user.requestedContactIds}`);
-            const biodataRequests = await Promise.all(user.requestedContactIds.map(async (contactId) => {
-                const biodata = await Biodata.findOne({ biodataId: contactId }).lean();
-                console.log(`Fetched biodata for contactId ${contactId}:`, biodata);
+            const biodataRequests = await Promise.all(user.requestedContactIds.map(async (request) => {
+                const biodata = await Biodata.findOne({ biodataId: request.biodataId }).lean();
+                console.log(`Fetched biodata for contactId ${request.biodataId}:`, biodata);
                 if (biodata) {
                     return {
                         requestId: new mongoose.Types.ObjectId(), // Generate a unique ID for the request
                         userId: user._id,
                         userName: user.name,
                         userEmail: user.email,
-                        contactId: contactId,
+                        contactId: request.biodataId,
                         contactName: biodata.name,
                         contactEmail: biodata.contactEmail,
                         contactMobileNumber: biodata.mobileNumber,
+                        requestTime: request.requestTime // Include the request time
                     };
                 }
                 return null;
@@ -99,12 +119,37 @@ exports.requestedContacts = async (req, res) => {
             contactRequests = contactRequests.concat(biodataRequests.filter(request => request !== null));
         }));
 
-        console.log("Final contact requests:", contactRequests);
+        // Sort the requests by the requestTime in descending order
+        contactRequests.sort((a, b) => b.requestTime - a.requestTime);
 
-        res.status(200).json(contactRequests);
+        // Implement pagination
+        const totalRequests = contactRequests.length;
+        const totalPages = Math.ceil(totalRequests / pageSize);
+        const paginatedRequests = contactRequests.slice((page - 1) * pageSize, page * pageSize);
+
+        console.log("Final contact requests:", paginatedRequests);
+
+        res.status(200).json({
+            totalRequests,
+            totalPages,
+            currentPage: page,
+            pageSize,
+            contactRequests: paginatedRequests
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'An error occurred while fetching contact requests' });
     }
 };
 
+
+exports.getRole = async (req,res) => {
+    const user = await User.findOne({email:req.user.email});
+    const role = user.role;
+    try{
+        res.status(200).json(role);
+    }catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'An error occurred while fetching role' });
+    }
+}
