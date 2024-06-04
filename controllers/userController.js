@@ -77,6 +77,27 @@ exports.acceptContact = async (req, res) => {
         res.status(500).json({ error: 'An error occurred while accepting contact' });
     }
 };
+exports.rejectContact = async (req, res) => {
+    const { email, biodataId } = req.params;
+
+    try {
+        // Find and update the user
+        await User.findOneAndUpdate(
+            { email },
+            {
+                // Remove the requested contact object from the array
+                $pull: { requestedContactIds: { biodataId: Number(biodataId) } },
+
+            },
+            { new: true, useFindAndModify: false }
+        );
+
+        res.status(200).json({ message: 'Request rejected successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'An error occurred while rejecting contact' });
+    }
+};
 
 exports.requestedContacts = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
