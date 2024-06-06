@@ -95,6 +95,18 @@ exports.deleteBiodata = async (req, res) => {
     }
 };
 
+exports.getUserBiodata = async (req, res) => {
+    try {
+        const {email} = req.user
+        const biodata = await Biodata.findOne({ email });
+        if (!biodata) {
+            return res.status(404).json({ message: 'Biodata not found' });
+        }
+        res.status(200).json(biodata);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
 exports.getBiodataById = async (req, res) => {
     try {
         const biodata = await Biodata.findOne({ biodataId: req.params.biodataId });

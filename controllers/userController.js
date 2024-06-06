@@ -75,6 +75,76 @@ exports.getAllUsers = async (req, res) => {
     }
 };
 
+exports.getUser = async (req, res) => {
+    try {
+        const {email} = req.user
+        const user = await User.findOne({ email });
+
+        res.status(200).json({
+            user
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'An error occurred while fetching users.' });
+    }
+};
+
+exports.requestPremium = async (req, res) => {
+    const { email } = req.user;
+
+    try {
+        // Find and update the user
+        await User.findOneAndUpdate(
+            { email },
+            {premiumStatus: 'Requested'}
+        );
+
+        res.status(200).json({ message: 'Premium Status requested successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'An error occurred while requesting Premium Status' });
+    }
+};
+exports.allPremiumRequests = async (req, res) => {
+    try {
+        const { page = 1, pageSize = 10, search = "" } = req.query;
+
+        const query = {
+            premiumStatus: "Requested",
+            ...(search && { $or: [{ name: { $regex: search, $options: "i" } }, { email: { $regex: search, $options: "i" } }] }),
+        };
+
+        const users = await User.find(query)
+            .skip((page - 1) * pageSize)
+            .limit(Number(pageSize))
+            .lean();
+
+        const totalUsers = await User.countDocuments(query);
+        const totalPages = Math.ceil(totalUsers / pageSize);
+
+        // Change the response for no users found
+        if (!users.length) {
+            return res.status(200).json({
+                users: [],
+                totalPages: 0,
+                currentPage: Number(page),
+                totalUsers: 0,
+                message: "No users found with requested premium status."
+            });
+        }
+
+        res.status(200).json({
+            users,
+            totalPages,
+            currentPage: Number(page),
+            totalUsers,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "An error occurred while fetching users." });
+    }
+};
+
 exports.requestContact = async (req, res) => {
     const { biodataId } = req.params;
 
@@ -415,6 +485,7 @@ exports.updatePremium = async (req,res)=>{
     try{
         const {id}= req.params;
         const {status} = req.body
+        console.log(status)
         const user =await User.findByIdAndUpdate(id,{premiumStatus:status})
         res.status(200).json({message:"Premium updated"});
     }catch (error) {
