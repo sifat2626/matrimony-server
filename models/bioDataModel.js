@@ -4,7 +4,7 @@ const biodataSchema = new mongoose.Schema({
     biodataType: {
         type: String,
         required: true,
-        enum: ['Male', 'Female'] // Must select input
+        enum: ['Male', 'Female'] // Ensures input must be either 'Male' or 'Female'
     },
     name: { type: String, required: true },
     profileImage: { type: String }, // Can be a URL or a file path
@@ -38,5 +38,5 @@ const biodataSchema = new mongoose.Schema({
     biodataId: { type: Number, unique: true }, // Ensure biodataId is unique
 }, { timestamps: true });
 
-
+// Check for existing model before creating a new one
 module.exports = mongoose.models.Biodata || mongoose.model('Biodata', biodataSchema);

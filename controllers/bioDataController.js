@@ -107,4 +107,29 @@ exports.getBiodataById = async (req, res) => {
     }
 };
 
+exports.biodataStats = async (req, res) => {
+    try {
+        // Correctly call the estimatedDocumentCount method
+        const totalBiodata = await Biodata.estimatedDocumentCount();
+
+        // Use countDocuments to get the count of male and female users
+        const maleUsers = await Biodata.countDocuments({ biodataType: 'Male' }); // Ensure case matches enum
+        const femaleUsers = await Biodata.countDocuments({ biodataType: 'Female' }); // Ensure case matches enum
+        const premiumMembers = await Biodata.countDocuments({premiumStatus:'Premium'})
+
+        // Create the statData object
+        const statData = {
+            count: totalBiodata,
+            maleCount: maleUsers,
+            femaleCount: femaleUsers,
+            premiumCount: premiumMembers,
+        };
+
+        // Respond with the statData object
+        res.status(200).json(statData);
+    } catch (error) {
+        console.error('Error in biodataStats:', error); // Enhanced error logging
+        res.status(500).json({ message: error.message });
+    }
+};
 

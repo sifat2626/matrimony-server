@@ -35,6 +35,45 @@ exports.createUser = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+exports.getAllUsers = async (req, res) => {
+    try {
+        const { page = 1, pageSize = 10, search = '' } = req.query;
+
+        // Construct the search query
+        const searchQuery = search
+            ? {
+                $or: [
+                    { email: { $regex: search, $options: 'i' } },
+                    { name: { $regex: search, $options: 'i' } }
+                ]
+            }
+            : {};
+
+        // Fetch the users with pagination and search
+        const users = await User.find(searchQuery)
+            .skip((page - 1) * pageSize)
+            .limit(parseInt(pageSize))
+            .lean();
+
+        // Get the total count of users matching the search query
+        const totalUsers = await User.countDocuments(searchQuery);
+
+        if (!users.length) {
+            return res.status(404).json({ message: 'No users found.' });
+        }
+
+        res.status(200).json({
+            totalUsers,
+            totalPages: Math.ceil(totalUsers / pageSize),
+            currentPage: parseInt(page),
+            pageSize: parseInt(pageSize),
+            users
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'An error occurred while fetching users.' });
+    }
+};
 
 exports.requestContact = async (req, res) => {
     const { biodataId } = req.params;
@@ -70,7 +109,6 @@ exports.acceptContact = async (req, res) => {
             },
             { new: true, useFindAndModify: false }
         );
-
         res.status(200).json({ message: 'Contact accepted successfully' });
     } catch (error) {
         console.error(error);
@@ -239,7 +277,7 @@ exports.getRole = async (req,res) => {
     }
 }
 
-exports.getApprovedContacts = async (req, res) => {
+exports.getApprovedContactsByUser = async (req, res) => {
     const { email } = req.user;
 
     try {
@@ -259,6 +297,53 @@ exports.getApprovedContacts = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'An error occurred while fetching approved contacts.' });
+    }
+};
+exports.getApprovedContactsForAllUsers = async (req, res) => {
+    try {
+        // Find all users
+        const users = await User.find({}, 'email approvedContactIds').lean();
+
+        if (!users) {
+            return res.status(404).json({ message: 'No users found.' });
+        }
+
+        // Map users to get their email and approved contacts
+        const userContacts = users.map(user => ({
+            email: user.email,
+            approvedContactIds: user.approvedContactIds,
+        }));
+
+        console.log('Approved contacts for all users:', userContacts);
+
+        res.status(200).json({ userContacts });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'An error occurred while fetching approved contacts for all users.' });
+    }
+};
+exports.getRevenueCount = async (req, res) => {
+    try {
+        // Find all users
+        const users = await User.find({}, 'approvedContactIds').lean();
+
+        if (!users) {
+            return res.status(404).json({ message: 'No users found.' });
+        }
+
+        // Calculate the total number of approved contacts
+        const totalApprovedContacts = users.reduce((acc, user) => acc + user.approvedContactIds.length, 0);
+
+        // Calculate the revenue
+        const revenue = totalApprovedContacts * 5;
+
+        console.log('Total approved contacts:', totalApprovedContacts);
+        console.log('Total revenue:', revenue);
+
+        res.status(200).json({ totalApprovedContacts, revenue });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'An error occurred while calculating the revenue.' });
     }
 };
 
@@ -326,3 +411,26 @@ exports.removeContact = async (req, res) => {
         res.status(500).json({ error: 'An error occurred while removing the contact request.' });
     }
 };
+exports.updatePremium = async (req,res)=>{
+    try{
+        const {id}= req.params;
+        const {status} = req.body
+        const user =await User.findByIdAndUpdate(id,{premiumStatus:status})
+        res.status(200).json({message:"Premium updated"});
+    }catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'An error occurred while making user premium.' });
+    }
+}
+
+exports.updateRole = async (req,res)=>{
+    try{
+        const {id}= req.params;
+        const {role} = req.body
+        const user =await User.findByIdAndUpdate(id,{role})
+        res.status(200).json({message:"Role updated"});
+    }catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'An error occurred while updating user role.' });
+    }
+}

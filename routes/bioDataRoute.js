@@ -5,8 +5,9 @@ const {
     deleteBiodata,
     getBiodatas,
     getBiodataById,
+    biodataStats
 } = require('../controllers/biodataController');
-const {verifyToken} = require("../middlewares/authMiddleware");
+const {verifyToken, isAdmin} = require("../middlewares/authMiddleware");
 
 // Create a new biodata
 router.post('/biodata',verifyToken, createOrUpdateBiodata);
@@ -20,6 +21,7 @@ router.get('/biodatas', getBiodatas);
 
 // Get a single biodata by ID
 router.get('/biodata/:biodataId', getBiodataById);
+router.get('/biodata-stats', verifyToken, isAdmin, biodataStats);
 
 module.exports = router;
 
