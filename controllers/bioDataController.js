@@ -118,6 +118,31 @@ exports.getBiodataById = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+exports.getBiodataByEmail = async (req, res) => {
+    try {
+        const biodata = await Biodata.findOne({ contactEmail: req.params.email });
+        if (!biodata) {
+            return res.status(400).json({ message: 'Biodata not found' });
+        }
+        res.status(200).json(biodata);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+exports.getBiodataId = async (req, res) => {
+    try {
+        const {id}= req.params
+        const biodata = await Biodata.findById(id);
+        if (!biodata) {
+            return res.status(400).json({ message: 'Biodata not found' });
+        }
+        const biodataId = biodata.biodataId
+        res.status(200).json(biodataId);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
 
 exports.biodataStats = async (req, res) => {
     try {

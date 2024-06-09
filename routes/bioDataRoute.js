@@ -6,7 +6,9 @@ const {
     getBiodatas,
     getBiodataById,
     biodataStats,
-    getUserBiodata
+    getUserBiodata,
+    getBiodataId,
+    getBiodataByEmail
 } = require('../controllers/biodataController');
 const {verifyToken, isAdmin} = require("../middlewares/authMiddleware");
 
@@ -22,6 +24,8 @@ router.get('/biodatas', getBiodatas);
 
 // Get a single biodata by ID
 router.get('/biodata/:biodataId', getBiodataById);
+router.get('/biodata/byEmail/:email', getBiodataByEmail);
+router.get('/biodata-id/:id', getBiodataId);
 router.get('/biodata', verifyToken, getUserBiodata);
 router.get('/biodata-stats', verifyToken, isAdmin, biodataStats);
 

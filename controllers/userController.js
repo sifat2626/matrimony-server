@@ -144,6 +144,16 @@ exports.allPremiumRequests = async (req, res) => {
         res.status(500).json({ error: "An error occurred while fetching users." });
     }
 };
+exports.allPremiumUsers = async (req, res) => {
+    try {
+        const premiumUsers = await User.find({ premiumStatus: 'Premium' });
+        res.status(200).json({ premiumUsers });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "An error occurred while fetching users." });
+    }
+};
+
 
 exports.requestContact = async (req, res) => {
     const { biodataId } = req.params;

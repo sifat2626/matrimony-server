@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { createUser, requestContact, requestedContacts,acceptContact, getRole,rejectContact, requestedContactsByUser,
     allContactsByUser,removeContact, getApprovedContactsForAllUsers, getApprovedContactsByUser,getRevenueCount,
-    getAllUsers, updatePremium, updateRole, getUser, requestPremium, allPremiumRequests
+    getAllUsers, updatePremium, updateRole, getUser, requestPremium, allPremiumRequests, allPremiumUsers
 } = require('../controllers/userController');
 const {verifyToken, isAdmin} = require("../middlewares/authMiddleware");
 
@@ -12,6 +12,7 @@ router.get('/all-users', getAllUsers);
 router.get('/user', verifyToken, getUser);
 router.get('/request-premium', verifyToken, requestPremium);
 router.get('/all-premium-requests', verifyToken,isAdmin, allPremiumRequests);
+router.get('/all-premium-users', allPremiumUsers);
 router.post('/request/:biodataId', verifyToken, requestContact);
 router.post('/accept/:email/:biodataId', verifyToken,isAdmin, acceptContact);
 router.post('/reject/:email/:biodataId', verifyToken,isAdmin, rejectContact);

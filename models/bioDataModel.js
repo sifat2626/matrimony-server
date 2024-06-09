@@ -7,7 +7,7 @@ const biodataSchema = new mongoose.Schema({
         enum: ['Male', 'Female'] // Ensures input must be either 'Male' or 'Female'
     },
     name: { type: String, required: true },
-    profileImage: { type: String }, // Can be a URL or a file path
+    profileImage: { type: String, default:'https://i.ibb.co/qB1vk9v/user.png' }, // Can be a URL or a file path
     dateOfBirth: { type: Date, required: true },
     height: { type: Number, required: true }, // Must select input
     weight: { type: Number, required: true }, // Must select input
