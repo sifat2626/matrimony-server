@@ -43,7 +43,8 @@ exports.createOrUpdateSuccessStory = async (req, res) => {
 
 exports.getAllSuccessStories = async (req, res) => {
     try {
-        const successStories = await SuccessStory.find();
+        // Fetch and sort success stories by marriageDate in ascending order
+        const successStories = await SuccessStory.find().sort({ marriageDate: 1 });
         res.status(200).json({ successStories });
     } catch (error) {
         console.error(error);
