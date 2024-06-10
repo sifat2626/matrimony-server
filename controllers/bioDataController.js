@@ -45,19 +45,28 @@ exports.createOrUpdateBiodata = async (req, res) => {
 
 
 exports.getBiodatas = async (req, res) => {
-    console.log(req.query)
-    const { page = 1, limit = 10, minAge,maxAge, biodataType, division } = req.query;
+    console.log(req.query);
 
+    let { page = 1, limit = 6, minAge, maxAge, biodataType, division } = req.query;
+
+    // Ensure page and limit are integers
+    page = parseInt(page, 10);
+    limit = parseInt(limit, 10);
+
+    // Initialize the query object
     const query = {};
 
+    // Handle age range filtering
     if (minAge && maxAge) {
-        query.age = { $gte: minAge, $lte: maxAge };
+        query.age = { $gte: parseInt(minAge, 10), $lte: parseInt(maxAge, 10) };
     }
 
+    // Handle biodata type filtering
     if (biodataType) {
         query.biodataType = biodataType;
     }
 
+    // Handle division filtering
     if (division) {
         query.$or = [
             { permanentDivision: division },
@@ -66,19 +75,23 @@ exports.getBiodatas = async (req, res) => {
     }
 
     try {
+        // Fetch filtered biodatas with pagination
         const biodatas = await Biodata.find(query)
-            .limit(limit * 1)
+            .limit(limit)
             .skip((page - 1) * limit)
             .exec();
 
+        // Count total documents matching the query
         const count = await Biodata.countDocuments(query);
 
+        // Send response with biodatas and pagination metadata
         res.status(200).json({
             biodatas,
             totalPages: Math.ceil(count / limit),
             currentPage: page,
         });
     } catch (error) {
+        // Send error response
         res.status(400).json({ message: error.message });
     }
 };

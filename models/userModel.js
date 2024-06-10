@@ -29,7 +29,6 @@ const userSchema = new mongoose.Schema({
     biodata: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Biodata',
-        unique: true,  // Ensures that each user can only have one biodata
     },
 }, { timestamps: true });
 const User = mongoose.model('User', userSchema)
