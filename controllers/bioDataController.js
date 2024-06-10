@@ -1,6 +1,6 @@
-const Biodata = require('../models/BiodataModel');
 const User = require('../models/userModel');
 const Counter = require('../models/counterModel');
+const Biodata = require('../models/bioDataModel');
 
 const getNextSequence = async (name) => {
     const counter = await Counter.findOneAndUpdate(

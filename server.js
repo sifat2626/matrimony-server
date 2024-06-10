@@ -8,13 +8,13 @@ require("dotenv").config();
 const morgan = require("morgan");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
-const Counter = require('./models/CounterModel');
+const Counter = require('./models/counterModel')
 
 
 // middlewares
 app.use(cors({
     origin: [
-        "https://travel-guru-a9df2.web.app",
+        "https://tietheknot-3a6f0.web.app",
         "http://localhost:5173"
     ],
     credentials: true,

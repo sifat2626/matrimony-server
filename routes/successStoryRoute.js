@@ -1,6 +1,6 @@
 const express = require('express');
+const successStoryController = require("../controllers/successStoryController");
 const router = express.Router();
-const successStoryController = require('../controllers/SuccessStoryController');
 
 // Route to create or update a success story
 router.post('/success-story', successStoryController.createOrUpdateSuccessStory);

@@ -9,7 +9,7 @@ const {
     getUserBiodata,
     getBiodataId,
     getBiodataByEmail
-} = require('../controllers/biodataController');
+} = require('../controllers/bioDataController');
 const {verifyToken, isAdmin} = require("../middlewares/authMiddleware");
 
 // Create a new biodata

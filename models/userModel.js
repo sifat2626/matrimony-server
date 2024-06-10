@@ -32,6 +32,7 @@ const userSchema = new mongoose.Schema({
         unique: true,  // Ensures that each user can only have one biodata
     },
 }, { timestamps: true });
+const User = mongoose.model('User', userSchema)
 
-module.exports = mongoose.models.User || mongoose.model('User', userSchema);
+module.exports = User;
 

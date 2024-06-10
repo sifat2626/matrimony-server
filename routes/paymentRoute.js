@@ -1,7 +1,7 @@
 const express = require('express');
 const stripe = require('stripe')(process.env.STRIPE_SECRET);
 const mongoose = require('mongoose');
-const User = require('../models/UserModel'); // Adjust the path to your User model
+const User = require("../models/userModel");
 const router = express.Router();
 
 router.use(express.json());
