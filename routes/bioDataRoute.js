@@ -27,7 +27,7 @@ router.get('/biodata/:biodataId', getBiodataById);
 router.get('/biodata/byEmail/:email', getBiodataByEmail);
 router.get('/biodata-id/:id', getBiodataId);
 router.get('/biodata', verifyToken, getUserBiodata);
-router.get('/biodata-stats', verifyToken, isAdmin, biodataStats);
+router.get('/biodata-stats', verifyToken, biodataStats);
 
 module.exports = router;
 
